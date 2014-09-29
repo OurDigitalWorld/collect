@@ -1,0 +1,20 @@
+<img id="galleryview" src="http://images.ourontario.ca/glib/view_gallery.gif" alt="gallery" title="gallery"/> &nbsp;
+<img id="thumbListview" src="http://images.ourontario.ca/glib/view_thumblist.gif" alt="thumb list" title="thumb list" /> &nbsp;
+<img id="2colview" src="http://images.ourontario.ca/glib/view_dbcol.gif" alt="2 columns" title="2 columns"/> &nbsp;
+<img id="listview" src="http://images.ourontario.ca/glib/view_list.gif" alt="list"  title="list"/> &nbsp;<br/>
+
+<ul id="resultList"
+    {% if group_local.view %}
+    class="{{ group_local.view }}"
+    {% else %}
+    class="{{ recordlist_class }}"
+    {% endif %}
+>
+{% for record in records %}
+    {% if record.rec.id %}
+    {% include 'MyCollection/record_order_snippet.html'%}
+    {% else %}
+    {% include 'MyCollection/record_unassigned_snippet.html'%}
+    {% endif %}
+{% endfor %}
+</ul>

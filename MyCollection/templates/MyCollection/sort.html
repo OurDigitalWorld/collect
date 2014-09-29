@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block javascript %}
+<script src="{% static "js/jquery.cookie.js" %}" type="text/javascript"></script>
+<script type="text/javascript" language="javascript">
+  $(document).ready(function() {
+    var csrftoken = $.cookie('csrftoken');
+  {% if url == 'sortgroup' %}
+    $( "#collection_return" ).click(function() {
+        window.location = "/index/";
+    });
+      {% else %}
+    $( "#group_return" ).click(function() {
+        window.location = "/group/{{ group.id }}/";
+    });
+  {% endif %}
+    $("#resultList").sortable({
+      update: function(event, ui) {
+      var serial = $('#resultList').sortable('serialize');
+      //alert(serial)
+ 	  $.ajax({
+	    url: "/{{ url }}/{{ group_id }}",
+	    type: "post",
+	    data: serial
+	  });
+      }
+    }).disableSelection();
+  });
+</script>
+{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+
+    {% if url == 'sortgroup' %}
+     <h2>Sort collections
+        <input type="button" id="collection_return" value="Done" />
+     </h2>
+        <div class="content">
+                <ul id="resultList" class="gallery">
+                 {% for item in groups %}
+                       <li class="floatcell" id ="item_{{ item.id }}">
+                            <div class="thumbbox"><img src="{{ item.url_thumbnail }}"/></div>
+                            {{ item.name }}
+                       </li>
+                {% endfor %}
+                </ul>
+        </div>
+    {% else %}
+    <h1>{{ group.name}}</h1>
+     <h2>
+        Sort records
+        <input type="button" id="group_return" value="Done" />
+     </h2>
+        <div class="content">
+                <ul id="resultList" class="gallery">
+                 {% for item in records %}
+                       <li class="floatcell" id ="item_{{ item.rec.id }}">
+                            <div class="thumbbox"><img src="{{ item.rec.url_thumbnail }}"/></div>
+                            {% if item.rec.user_title %}
+                                {{ item.rec.user_title }}
+                            {% elif item.rec.title %}
+                                {{ item.rec.title }}
+                            {% endif %}
+
+                       </li>
+                {% endfor %}
+                </ul>
+        </div>
+    {% endif %}
+
+{% endif %}
+{% endblock %}

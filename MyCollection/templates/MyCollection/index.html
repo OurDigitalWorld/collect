@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block javascript %}
+       <script src="{% static "js/jquery.cookie.js" %}" type="text/javascript"></script>
+       <script type="text/javascript">
+        $(function() {
+            var csrftoken = $.cookie('csrftoken');
+            $( "#group_sort" ).click(function() {
+                window.location = "/groupsort/";
+            });
+            $( "#add_collection_dialog" ).click(function() {
+                $( "#dialog-confirm" ).dialog( "open" );
+            });
+            $( "#dialog-confirm" ).dialog({
+                autoOpen: false,
+                resizable: false,
+                height:425,
+                width:600,
+                modal: true,
+                buttons: {
+                    "Close": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+            $( "#edit_collection_dialog" ).click(function() {
+                $( "#dialog-edit" ).dialog( "open" );
+            });
+            $( "#dialog-edit" ).dialog({
+                autoOpen: false,
+                resizable: false,
+                height:425,
+                width:600,
+                modal: true,
+                buttons: {
+                    "Close": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+            $( "#delete_collection_dialog" ).click(function() {
+                $( "#dialog-delete" ).dialog( "open" );
+            });
+            $( "#dialog-delete" ).dialog({
+                autoOpen: false,
+                resizable: false,
+                height:425,
+                width:600,
+                modal: true,
+                buttons: {
+                    "Close": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+
+            $( "#record-dialog-delete" ).dialog({
+                autoOpen: false,
+                resizable: false,
+                height:225,
+                width:225,
+                modal: true,
+                buttons: {
+                    "Delete": function() {
+                        $.ajax({
+                            type:"POST",
+                            url: '/recorddelete/'+ $("#delete_record_id").val(),
+                            data: {},
+                            success: function(data){
+                                 window.location = "/group/{{ group_local.id }}/";
+                            }
+                        });
+
+                    },
+                    "Close": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+        $( "#reorder-items" ).click(function() {
+			//alert("reordering items");
+             window.location = '/recordsort/{{ group_local.id }}'
+            //$( "#dialog-delete" ).dialog( "open" );
+        });
+
+        });
+        {% if records %}
+       $( document ).ready(function() {
+            $( "#listview" ).on( "click", function( event ) {
+                //alert( "Hello listview." );
+                $('#resultList').attr('class', 'list');
+                updateView('list');
+            });
+            $( "#thumbListview" ).on( "click", function( event ) {
+                //alert( "Hello thumbListview." );
+                $('#resultList').attr('class', 'single');
+                updateView('single');
+            });
+            $( "#galleryview" ).on( "click", function( event ) {
+                //alert( "Hello galleryview." );
+                $('#resultList').attr('class', 'gallery');
+                updateView('gallery');
+            });
+            $( "#2colview" ).on( "click", function( event ) {
+                //alert( "Hello galleryview." );
+                $('#resultList').attr('class', 'double');
+                updateView('double');
+            });
+       });
+       var csrftoken = $.cookie('csrftoken');
+       function updateView(style){
+              $.ajax({
+                url: "/groupview/{{ group_local.id }}",
+                type: "POST",
+                data: {"view": style}
+              });
+          };
+
+        $(document).on("click", ".UpdateRecord", function() {
+            var $this = $(this);
+            var record_id = $(this).attr('name');
+            var title = '';
+            var description = '';
+            var url = '';
+            var url_thumbnail = '';
+            var user_title = '';
+            var user_tags = '';
+            var user_notes = '';
+            $("#delete_record_id").attr('value', record_id)
+            //alert(record_id)
+            var record_url = "/recordview/"+record_id;
+            //alert(record_url)
+            $.getJSON(record_url, function(json){
+                $.each(json, function(key, data){
+                    title = data.fields.title;
+                    description = data.fields.description;
+                    url = data.fields.url;
+                    url_thumbnail = data.fields.url_thumbnail;
+                    user_title = data.fields.user_title;
+                    user_tags = data.fields.user_tags;
+                    user_notes = data.fields.user_notes;
+                });
+                $("#record_title").html(title);
+                $("#record_description").html(description);  //text box
+                $("#record_url").val(url);
+                $("#record_thumb").attr('src', url_thumbnail);
+                $("#record_user_title").val(user_title);  //text box
+                $("#record_user_notes").val(user_notes);  //text box
+                $("#record_user_tags").val(user_tags);  //text box
+                $("#form_record_edit").attr('action', '/recordedit/'+record_id);
+                $("#dialog-edit-record").dialog( "open" );
+            });
+            record_url = "/recordgroup/"+record_id;
+            $.ajax({
+                type: "GET",
+                url: record_url,
+                success: function(grouplist){
+                    $("#group_list").html(grouplist);
+                }
+            });
+            $( "#dialog-edit-record" ).dialog({
+                autoOpen: false,
+                resizable: false,
+                height:625,
+                width:600,
+                modal: true,
+                buttons: {
+                    "Update": function() {
+                        $this = $(this);
+                        $.ajax({
+                            type:'POST',
+                            url: '/recordedit/'+record_id,
+                            data: $('#form_record_edit').serialize(),
+                            contentType: "application/x-www-form-urlencoded;charset=utf-8",
+                            success: function(response){
+                                if(response['type'] == 'success') {
+                                    //any extra success functionality goes here
+                                    $this.dialog("close");
+                                } else {
+                                    $("#registration_error").html(response['message']);
+                                    console.log(response['errors']);
+                                };
+                                window.location = "/group/{{ group_id }}/"
+                            },
+                            error: function(xhr, ajaxOptions, thrownError) {
+                                alert(thrownError + '\n' + xhr.status + '\n' + ajaxOptions)
+                            }
+
+
+                        })
+                    },
+                    "Delete": function() {
+                        $( this ).dialog( "close" );
+                        $( "#record-dialog-delete" ).dialog( "open" );
+                    },
+                    "Close": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+
+        });
+        {% endif %}
+        </script>
+{% endblock %}
+
+{% block head_title %}
+    {% if user.is_authenticated %}
+        {% if group_local %}
+            {{ group_local.name }}
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    <div class="content">
+    {% if group_local %}
+        <div class="content-left70">
+        <h2>{{ group_local.name }}
+            {% if group_local.name != "Unassigned records" %}
+            <button id="edit_collection_dialog">Edit</button>&nbsp; &nbsp;
+            <button id="delete_collection_dialog">Delete</button>&nbsp; &nbsp;
+
+            {% if records %}<button id="reorder-items">Reorder items</button>&nbsp; &nbsp;{% endif %}
+            {% endif %}
+        </h2>
+        {% if group_local.introduction %}
+            <p>{{ group_local.introduction }}</p>
+        {% endif %}
+        {% if records %}
+            <a href="/index/">Back</a>
+                {% include 'MyCollection/recordlist_snippet.html' with recordlist_class="single"%}
+           </div>
+            <div class="content-right25">
+                {% include 'MyCollection/group_snippet.html' with thumb_class="thumbboxSmall"%}
+            </div>
+        {% else %}
+            <p>There are not any records currently assigned to this collection.</p>
+            </div>
+            <div class="content-right25">
+            {% include 'MyCollection/group_snippet.html' with thumb_class="thumbboxSmall"%}
+            </div>
+        {% endif %}
+    {% else %}
+        {% comment  %}'no specific group requested'{% endcomment %}
+        <h2>Most recent additions</h2>
+        <div class="content-left70">
+           {% include 'MyCollection/recordlist_snippet.html' with recordlist_class="gallery"%}
+        </div>
+        <div class="content-right25">
+        {% include 'MyCollection/group_snippet.html' with thumb_class="thumbboxSmall"%}
+        </div>
+    {% endif %}
+    </div>
+    <div id="dialog-confirm" title="Add Collection">
+        <form action="/groupadd/" method="POST">
+        {% csrf_token %}
+        {{  AddGroupForm.as_p }}
+        {% comment %}
+            Make Public:
+            <input type="radio" name="public_display" value="False" checked="checked" /> No
+            <input type="radio" name="public_display" value="True" /> Yes
+        {% endcomment %}
+
+        <input type="submit" value="Add">
+        </form>
+    </div>
+    <div id="dialog-edit" title="Edit {{ group_local.name }}">
+        <form action="/groupedit/{{ group_local.id }}" method="POST">
+        {% csrf_token %}
+        {{  EditGroupForm.as_p }}
+        {% comment %}
+            Make Public:
+            <input type="radio" name="public_display" value="False"
+                   {% if group_local.public_display == False %}checked="checked"{% endif %}/>No
+            <input type="radio" name="public_display" value="True"
+                   {% if group_local.public_display == True %}checked="checked"{% endif %}/> Yes
+        {% endcomment %}
+        <input type="submit" value="Update">
+        </form>
+    </div>
+    <div id="dialog-delete" title="Delete Collection">
+        <form action="/groupdelete/{{ group_local.id }}" method="POST">
+        {% csrf_token %}
+        <b>Name</b>:  {{ group_local.name }}
+        <b>Introduction:</b>  {{ group_local.introduction }}
+        <b>Public?: </b> {{ group_local.public_display }}
+        <input type="submit" value="Delete">
+        </form>
+    </div>
+    <div id="dialog-edit-record" title="Edit Record" class="ui-helper-hidden">
+        <form id="form_record_edit" action="" method="POST">
+        {% csrf_token %}
+            <img id="record_thumb" src="" /><br/>
+        <div id="record_url"></div><br/>
+        Title:<br/>
+        <textarea id="record_user_title" class="metatext" name="user_title" rows="1" ></textarea><br/>
+        Notes:<br/>
+        <textarea id="record_user_notes" class="metatext" name="user_notes" rows="6" ></textarea><br/>
+        Tags:<br/>
+        <textarea id="record_user_tags" class="metatext" name="user_tags" rows="2"></textarea><br/>
+        Available collection{{ groups|pluralize }}:
+        <div id="group_list"></div>
+        </form>
+        Original Title:<br/>
+        <div id="record_title"></div><br/>
+        Original Description:<br/>
+        <div id="record_description"></div><br/>
+    </div>
+    <div id="record-dialog-delete" title="Delete Record" class="ui-helper-hidden">
+         <p>Do you want to delete this record?</p>
+        <form>
+            {% csrf_token %}
+            <input id="delete_record_id" type="hidden" name="record_id" value="" />
+        </form>
+    </div>
+
+{% else %}
+    <p>We need you to sign in. Please sign up for a new account or login above.</p>
+{% endif %}
+{% endblock %}

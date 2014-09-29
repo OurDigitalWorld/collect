@@ -1,0 +1,19 @@
+
+<h2>My Collection{{ groups|pluralize }}
+<input type="button" id="group_sort" value="Sort" />
+</h2>
+<ul id="groupsList" class="single">
+   {% for item in groups %}
+   <li>
+        <div class="{{ thumb_class }}"><a href="/group/{{ item.id }}/"><img src="{{ item.url_thumbnail }}"/></a></div>
+            <a href="/group/{{ item.id }}/">{{ item.name }}</a>:<br/>  {{ item.num_recs }} item{{ item.num_recs|pluralize }}
+   </li>
+{% endfor %}
+    {% if non_group_record_count > 0 %}
+         <li class="unassigned">
+        <div class="{{ thumb_class }}"><a href="/group/0/"><img src="http://images.ourontario.ca/glib/newcollection.gif"/></a></div>
+            <a href="/group/0/">Unassigned records</a>:<br/>  {{ non_group_record_count }} item{{ non_group_record_count|pluralize }}
+   </li>
+    {% endif %}
+</ul>
+<button id="add_collection_dialog">Add Collection</button>&nbsp; &nbsp;

@@ -1,0 +1,20 @@
+<li>
+    <div class="thumbbox"><a href="{{ record.rec.url }}" ><img src="{{ record.rec.url_thumbnail }}" alt="{{ record.rec.user_title }}"></a></div>
+   <a href="{{ record.rec.url }}" >{{ record.rec.user_title }}</a>
+<div class="description">
+    {% if record.rec.user_notes %}
+        <b>Notes</b>: {{ record.rec.user_notes }}
+    {% endif %}
+    {% if record.rec.description and record.rec.user_notes%}<br/><br/>{% endif %}
+    <div class="small">
+         {% if record.rec.description %}
+            <b>Original title</b>: {{ record.rec.title }}<br/>
+        {% endif %}
+         {% if record.rec.description %}
+            <b>Original Description</b>: {{ record.rec.description|safe }}
+        {% endif %}
+    </div>
+</div>
+<div class="description_truncate">{{ record.rec.user_notes|truncatewords:25 }}</div>
+<input type="button" name="{{ record.rec.id }}" value="Update" class="UpdateRecord" />
+</li>

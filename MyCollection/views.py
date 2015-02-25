@@ -45,7 +45,6 @@ def group(request, group_id):
     else:
         group_local = Group.objects.get(pk=group_id)
         user = group_local.user_id
-        # print(user)
         if user_id != user:
             return HttpResponseRedirect('/accounts/login/')
         group_data = {

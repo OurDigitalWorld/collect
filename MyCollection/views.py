@@ -17,7 +17,6 @@ from MyCollection.forms import AddGroupForm, EditGroupForm, EditRecordForm
 
 def index(request):
     user_id = request.user.id
-    #print("user_id: ", user_id)
     if user_id is None:
         return HttpResponseRedirect('/accounts/login/')
     groups = Group.objects.filter(user_id=user_id).order_by('group_order').select_related().annotate(
@@ -41,8 +40,6 @@ def group(request, group_id):
     non_group_record_count = get_unassigned_records_count(user_id)
     if group_id == '0':
         records = get_unassigned_records_list(user_id)
-        #for rec in records:
-            #print("unassigned: ", rec.title)
         group_data = {}
         group_local = {'name': 'Unassigned records'}
     else:
@@ -161,11 +158,8 @@ def sortgroup(request):
 
 @csrf_exempt
 def sortrecord(request, group_id):
-    #print("Post: ", request.POST.getlist('item[]'))
     for index_str, item_id in enumerate(request.POST.getlist('item[]')):
-        #print("index_str, item_id: ", index_str, item_id)
         item = get_object_or_404(Order, rec=int(str(item_id)), grp=group_id)
-        #print('item: ', item)
         item.number = index_str
         item.save()
     return HttpResponse('')
@@ -177,7 +171,6 @@ def recordview(request, record_id):
     user = int(record[0].user_id)
     if user_id != user:
         return HttpResponseRedirect('/index')
-    #TODO: consider refactoring when api added to project
     data = serializers.serialize('json', record)
     return HttpResponse(data, content_type='application/json')
 
@@ -190,18 +183,14 @@ def recordgroup(request, record_id):
 
 @csrf_exempt
 def recordedit(request, record_id):
-    #print('view193: record_id: ', record_id) 
     user_id = int(request.user.id)
     record = Record.objects.get(pk=record_id)
     user = int(record.user_id)
     if user_id != user:
         return HttpResponseRedirect('/index')
-    #print(request.POST)
     if request.method == 'POST':
         form = EditRecordForm(request.POST, instance=record)
         if form.is_valid():
-            #print("probably valid")
-            #print('view204: record_id: ', record_id)
             form.save(request.POST, user_id, record_id)
         else:
             print("invalid")

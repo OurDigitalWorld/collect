@@ -26,7 +26,7 @@ class Group(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     group_order = models.FloatField(blank=True, null=True)
     introduction = models.TextField(blank=True, null=True)
-    view = models.CharField(max_length=7,blank=True, null=True)
+    view = models.CharField(max_length=7, blank=True, null=True)
 
 
 class Order(models.Model):
